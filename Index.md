@@ -1,7 +1,7 @@
 # DuelLingo Privacy Policy
 
-**Effective date:** [DATE OF APP STORE RELEASE]
-**Last updated:** [DATE OF APP STORE RELEASE]
+**Effective date:** 4/21/2026
+**Last updated:** 4/21/2026
 
 This policy explains what DuelLingo does with your information. DuelLingo is a 1v1 Korean language-learning game for iOS. We keep data collection minimal: most of your progress lives only on your device.
 
@@ -133,7 +133,7 @@ If we change this policy materially, we'll update the "Last updated" date at the
 
 Questions? Reach out to:
 
-**Joseph Rizzo** — [YOUR_CONTACT_EMAIL]
+**Joseph Rizzo** — Joseph@Winhanced.com
 
 ---
 
