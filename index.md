@@ -1,140 +1,90 @@
 # DuelLingo Privacy Policy
 
-**Effective date:** 4/21/2026
-**Last updated:** 4/21/2026
+_Last updated: April 24, 2026_
 
-This policy explains what DuelLingo does with your information. DuelLingo is a 1v1 Korean language-learning game for iOS. We keep data collection minimal: most of your progress lives only on your device.
+DuelLingo is designed to respect your data. Most of your progress lives only on your device, and the multiplayer features use Apple's CloudKit so your data stays inside your iCloud account.
 
----
+## What stays on your device
 
-## TL;DR
+- Your learning progress, stats, streaks, review history, word-mastery list, heat-map activity, and daily quests.
+- Your avatar, color, and customized stat selections.
+- Your saved friends list (device-scoped cache of the multiplayer profiles you've added).
+- Your list of blocked users (device-scoped cache of server-side Block records — see "Moderation" below).
 
-- If you **sign in with Apple**, we store your Apple user identifier (and, if you share it, your email/name) so we can recognize you across app reinstalls.
-- If you **play as guest**, we store nothing that identifies you — all gameplay data stays on your device.
-- Your **stats, streaks, known words, and SRS review history** live in local on-device storage (SwiftData). We don't send any of it to a server.
-- We show **banner ads** via Google AdMob. AdMob may collect your device's advertising identifier and usage data to serve ads, subject to your App Tracking Transparency (ATT) choice.
-- We offer a **$2.99 in-app purchase to remove ads**. Apple handles the payment. We only see Apple's signed transaction receipt — never your payment method.
-- We don't sell your data. We don't send you marketing emails. We don't have a server.
+This data lives in SwiftData on your phone. It is not uploaded to any server we control.
 
----
+## What goes into CloudKit (Apple's iCloud storage)
 
-## 1. Information we collect
+When you sign in and use multiplayer, the app stores a small amount of data in Apple's CloudKit public database — the same container the app uses to connect players to each other. You can think of this as the "shared space" where DuelLingo players find each other.
 
-### 1.1 Apple Sign-In (optional)
-If you choose to sign in with Apple, Apple shares:
-- Your **Apple user identifier** (a random, app-specific string)
-- Your **email address**, if you choose to share it (Apple lets you hide it behind a relay address — your choice)
-- Your **name**, if you choose to share it
+**Your public multiplayer profile** (`PlayerProfile` record). Contains:
+- Your chosen display handle + 4-digit discriminator (e.g., `jiwoo#1234`).
+- Your avatar emoji or photo (whichever you set in-app).
+- Your color accent.
+- Your current ELO, rank, level, gems, wins, losses, streak, best combo, and aggregate stats — denormalized so friends can render your profile without extra lookups.
+- Your Sign-in-with-Apple user identifier — stored so that if you reinstall the app, we can restore your account to the same profile. Not shared with other players.
+- A `lastActive` timestamp bumped every ~25 seconds while the app is foreground, so friends can see an "online" dot.
 
-We store these on your device so you remain signed in across reinstalls. We don't transmit them anywhere.
+**Friend requests** (`FriendRequest` record). Contains:
+- The requesting and receiving users' Apple-assigned CloudKit user IDs.
+- Both users' display fields (handle, discriminator, display name, avatar, color) at request time.
+- Status (pending / accepted / rejected) and timestamps.
 
-### 1.2 Guest play
-If you choose "Play as guest," we don't collect any identifying information. Your profile, stats, and progress are stored only on your device.
+**Async and ranked duel state** (`AsyncMatch`, `RankedMatch` records). Contains:
+- Both participants' CloudKit user IDs.
+- Both participants' display fields.
+- Gameplay state: turn pointer, HP, current round, answer history for the match, outcome when finished.
+- Gem balances snapshotted at each turn for settlement.
 
-### 1.3 Gameplay data (device-local)
-DuelLingo stores the following locally, on your device only:
-- Handle, avatar, ELO, rank, streak, gems
-- Wins, losses, accuracy, best combo
-- Daily quest progress
-- Review items (which Korean words you've seen, answered correctly/incorrectly, SRS scheduling data)
-- Known-words list (items you've answered correctly 5+ times in a row)
-- App preferences (haptics on/off, ads-removed purchase state)
+**Ranked match history** (`RankedMatchHistory` record, one row per match per participant). Contains:
+- Your CloudKit user ID.
+- The opponent's display fields (not their user ID).
+- ELO delta, post-ELO, post-rank, rounds won, rounds total, and when the match was played.
 
-This data never leaves your device. If you delete the app, it's gone.
+**Ranked matchmaking queue** (`RankedQueue` record). Written only when you are actively looking for a ranked opponent. Contains your CloudKit user ID, ELO, and display fields. Auto-expires after ~30 seconds of inactivity.
 
-### 1.4 In-app purchase
-If you buy "Remove Ads" ($2.99, one-time), Apple processes the purchase. We receive Apple's signed transaction receipt to verify the entitlement. We never see your payment method, name, or billing address — only Apple does.
+## Moderation: Block + Report
 
-### 1.5 Advertising (Google AdMob)
-DuelLingo uses the Google Mobile Ads SDK to show banner ads (removable with IAP). AdMob may collect:
-- Your device's **advertising identifier** (IDFA on iOS), if you grant permission through the App Tracking Transparency prompt
-- **Device/session information** (device type, iOS version, locale, approximate geography)
-- **Interaction data** (ad impressions, clicks)
+DuelLingo includes user-to-user moderation so you can protect yourself from abusive or harassing users.
 
-AdMob uses this to serve ads and measure performance. It's subject to Google's privacy policy: https://policies.google.com/privacy
+**Blocking** a user writes a `Block` record to CloudKit containing your CloudKit user ID, the blocked user's CloudKit user ID, and a snapshot of their display handle and avatar at block time. Blocked users stop appearing in your friends list, friend requests, and leaderboards. We mirror the block list to your device so this filtering works instantly. Blocking is one-way; the blocked user is not notified.
 
-You can opt out of personalized ads by declining the tracking prompt or by toggling "Allow Apps to Request to Track" off in iOS Settings → Privacy & Security → Tracking.
+**Reporting** a user writes a `Report` record to CloudKit containing your CloudKit user ID, the reported user's CloudKit user ID, their display fields, the reason you selected (harassment, inappropriate handle, inappropriate behavior, spam, or "something else"), the context in the app where you reported from (friends list, friend request, match, etc.), and any optional details you wrote. Reports are retained for moderation review. Reporting is one-way; the reported user is not notified.
 
----
+## Sign in with Apple
 
-## 2. How we use your information
+When you sign in with Apple, Apple shares with us only what you choose to share: your Apple user identifier (always), plus optionally your first name and email. We store these locally to personalize onboarding; the user identifier is also stored in CloudKit on your `PlayerProfile` so we can restore your account on reinstall. We do not share these fields with other players.
 
-We only use your information to:
-- Keep you signed in across reinstalls (Apple Sign-In)
-- Track your learning progress locally
-- Verify your "Remove Ads" purchase (IAP receipt)
-- Serve banner ads (via AdMob, if ads not removed)
+## Account deletion
 
-We do **not**:
-- Sell your personal information
-- Share your personal information with third parties other than Apple (for sign-in and IAP) and Google (for ads, if you haven't removed them)
-- Send you marketing emails or push notifications (we don't even have a server to send from)
-- Track you across other apps or websites we don't operate
+You can delete your account from inside the app at any time — Profile → Delete account. Deleting your account:
 
----
+- Removes your `PlayerProfile` record (including any orphaned profiles tied to the same Apple ID).
+- Removes all your sent and received `FriendRequest` records.
+- Removes every `AsyncMatch` and `RankedMatch` record you participated in (so your opponent's inbox view of those matches also clears).
+- Removes your own `RankedMatchHistory` rows (the opponent's separate row is theirs to delete or keep).
+- Removes your `RankedQueue` entry if you were queued.
+- Removes all `Block` and `Report` records you authored. Reports about you (where you are the reported party) are retained for moderation.
+- Removes all on-device data: profile, review items, friends cache, blocked users cache, saved settings, keychain entries for your Apple user identifier and discriminator.
 
-## 3. Third parties
+**Important:** Apple keeps a record of which apps you've signed in to with Apple. After you delete your account in DuelLingo, DuelLingo will still appear in your device's **Settings → Your Apple ID → Sign-In & Security → Apps Using Your Apple ID** list until you tap "Stop Using Apple ID" there. Deleting in-app erases DuelLingo's data; the Settings entry is managed by iOS itself.
 
-DuelLingo integrates these third-party services:
+## Third-party services
 
-| Service | Purpose | Data involved | Privacy policy |
-|---|---|---|---|
-| **Apple Inc.** | Sign in with Apple, In-App Purchase, on-device speech synthesis (TTS) | Apple user identifier, email/name (optional), purchase receipt | https://www.apple.com/legal/privacy/ |
-| **Google AdMob** | Banner ad serving | Advertising identifier, device/session info, ad interactions | https://policies.google.com/privacy |
+**Google AdMob.** If you see ads in DuelLingo (before purchasing the ad removal), AdMob may collect an advertising identifier and device data depending on your App Tracking Transparency preference. You can change your tracking preference in iOS Settings at any time. We do not control AdMob's data practices directly; see [Google's Ads Privacy Policy](https://policies.google.com/privacy).
 
-We do not use any analytics SDKs, crash reporters, or attribution providers at this time.
+**Apple.** Apple processes Sign in with Apple, in-app purchases, CloudKit storage, and push notifications. See Apple's privacy disclosures for details.
 
----
+## Ad removal
 
-## 4. Your rights and choices
+Remove ads with a one-time $2.99 purchase processed by Apple. Apple sends us transaction confirmation only; we never see your payment details.
 
-**Sign out from Sign in with Apple:** iOS Settings → tap your name at the top → Sign in with Apple → DuelLingo → Stop Using Apple ID.
+## Children
 
-**Delete your data:** delete the app. All on-device data is erased.
+DuelLingo is rated 4+ and does not knowingly collect personal information from children under 13. If you believe a child under 13 has created an account, please contact us (below) and we'll remove it.
 
-**Opt out of ad tracking:** decline the App Tracking Transparency prompt, or toggle off in iOS Settings → Privacy & Security → Tracking.
+## Contact
 
-**Remove ads permanently:** purchase the $2.99 "Remove Ads" in-app purchase.
+Joseph Rizzo — joseph@winhanced.com
 
-**Request purchase refunds:** via https://reportaproblem.apple.com (handled by Apple).
-
-If you're in a jurisdiction with additional rights (e.g., the EU, California), you may have rights under GDPR/CPRA to access or delete information we hold about you. Because we don't maintain any server-side database, the only personal information we hold is what's on your device — delete the app to remove it.
-
----
-
-## 5. Children
-
-DuelLingo is appropriate for general audiences and is not directed at children under 13. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has provided personal information, please contact us and we'll investigate.
-
----
-
-## 6. Data retention
-
-- **On-device data:** retained until you delete the app.
-- **Apple Sign-In identifier in Apple's keychain:** retained until you revoke access via iOS Settings (see section 4), or delete and reinstall the app.
-- **AdMob data:** retained by Google per their retention policies.
-- **Purchase receipts:** retained by Apple indefinitely as proof of purchase.
-
----
-
-## 7. Security
-
-DuelLingo uses iOS's built-in security features (sandboxed storage, Keychain for Apple Sign-In tokens). Because we don't run a server, there's no remote database to breach. Gameplay data is protected by the same iOS sandbox that protects other apps on your device.
-
----
-
-## 8. Changes to this policy
-
-If we change this policy materially, we'll update the "Last updated" date at the top and note the change in the App Store release notes for that version. Continued use of the app after a change means you accept the updated policy.
-
----
-
-## 9. Contact
-
-Questions? Reach out to:
-
-**Joseph Rizzo** — Joseph@Winhanced.com
-
----
-
-*This policy applies to DuelLingo on iOS only. It does not cover any third-party sites, services, or apps linked from within DuelLingo.*
+If you have privacy questions, data-deletion requests, or want to report something you saw in the app, that address reaches a real human.
